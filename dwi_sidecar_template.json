@@ -1,0 +1,25 @@
+{
+  "_comment": "Static protocol-level fields. Per-subject fields (EchoTime, SeriesNumber, AcquisitionNumber, PhilipsRescaleSlope, PhilipsRescaleIntercept, PhilipsScaleSlope) are extracted automatically from each subject's PAR file.",
+
+  "Manufacturer": "Philips",
+  "ManufacturersModelName": "Ingenia/Elition 3T",
+  "MagneticFieldStrength": 3,
+  "ProtocolName": "WIPq64wb",
+
+  "RepetitionTime": 11.833,
+  "FlipAngle": 90,
+
+  "PhaseEncodingDirection": "i",
+  "TotalReadoutTime": 0.0184,
+
+  "SliceThickness": 2.0,
+  "NumberOfSlices": 60,
+  "ReconMatrixPE": 112,
+  "ParallelReductionFactorInPlane": 2.0,
+  "ParallelAcquisitionTechnique": "SENSE",
+  "MultibandAccelerationFactor": 1,
+
+  "ReceiveCoilName": "HEAD_32ch",
+
+  "InstitutionName": "ETH Zurich IBT"
+}

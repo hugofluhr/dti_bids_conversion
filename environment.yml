@@ -1,0 +1,10 @@
+name: neuroim
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - nibabel>=5.3
+  - pandas>=2.2
+  - pybids>=0.19
+  - bids-validator>=1.14
+  # dcm2niix: install via homebrew (brew install dcm2niix)

@@ -1,0 +1,14 @@
+# BIDS output (data, not code)
+bids_output/
+bids/
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Subject LUT (contains patient metadata)
+subject_lut.tsv
+
+# macOS
+.DS_Store
