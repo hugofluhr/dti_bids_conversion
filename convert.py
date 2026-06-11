@@ -23,6 +23,15 @@ import pandas as pd
 LUT_PATH = Path(__file__).parent / 'subject_lut.tsv'
 DWI_TEMPLATE_PATH = Path(__file__).parent / 'dwi_sidecar_template.json'
 
+# Fields dcm2niix writes that are not BIDS-compliant or are misleading when the
+# JSON is rebuilt from PAR rather than being dcm2niix's own output.
+_DCM2NIIX_DROP = frozenset({
+    'UsePhilipsFloatNotDisplayScaling',
+    'ConversionSoftware',
+    'ConversionSoftwareVersion',
+    'ImageComments',  # may contain patient name (PHI)
+})
+
 # Handles all observed naming variants:
 #   bluko_mrs_001_...  002_bluko_mrs_...  003_bluko_mrs_...  mrs_bluko_004_...
 _SUBJECT_RE = re.compile(
@@ -121,6 +130,16 @@ def copy_bids_files(tmp: Path, sub_label: str, scan_type: str, dest_dir: Path) -
 
     for dest_name, src in suffixes.items():
         shutil.copy2(src, dest_dir / dest_name)
+
+
+def strip_dcm2niix_fields(json_path: Path) -> None:
+    """Remove known non-BIDS/misleading fields from a dcm2niix-generated sidecar."""
+    if not json_path.exists():
+        return
+    sidecar = json.loads(json_path.read_text())
+    for key in _DCM2NIIX_DROP:
+        sidecar.pop(key, None)
+    json_path.write_text(json.dumps(sidecar, indent=2) + '\n')
 
 
 def apply_dwi_template(json_path: Path) -> None:
@@ -228,7 +247,7 @@ def convert_subject(sub_id: str, scan_type: str, par_file: Path, bids_root: Path
 
     if scan_type == 'dwi':
         json_path = dest_dir / f'{sub_label}_dwi.json'
-        json_path.write_text('{}\n')  # discard dcm2niix JSON, build from scratch
+        strip_dcm2niix_fields(json_path)
         apply_dwi_template(json_path)
         apply_par_dwi_fields(json_path, par_file)
 

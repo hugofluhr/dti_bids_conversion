@@ -33,14 +33,25 @@ conda run -n neuroim python convert.py \
 
 The script will:
 1. Detect all PAR files in `source_dir` and classify them as T1 or DWI
-2. Run `dcm2niix` on each file and place the output in the correct BIDS location
+2. Run `dcm2niix` on each file to produce NIfTI + bvec/bval
 3. Write `dataset_description.json` and `participants.tsv` into the BIDS root
-4. Update `subject_lut.tsv` in this repo with subject metadata and conversion timestamp
-5. Run `bids-validator` on the output (pass `--skip-validate` to bypass)
+4. For DWI, build the JSON sidecar: keep dcm2niix-extracted fields (e.g. `ImageOrientationPatientDICOM`), strip non-BIDS fields, then apply static fields from `dwi_sidecar_template.json` and per-subject fields (EchoTime, AcquisitionNumber, SeriesNumber, Philips rescaling factors) extracted from the PAR file
+5. Update `subject_lut.tsv` (gitignored) with subject metadata and conversion timestamp
+6. Run `bids-validator` on the output (pass `--skip-validate` to bypass)
+
+To update only the DWI JSON sidecars (e.g. after editing `dwi_sidecar_template.json`) without re-running dcm2niix:
+
+```bash
+conda run -n neuroim python convert.py <source_dir> <bids_output_dir> --update-json-only
+```
+
+## DWI sidecar template
+
+`dwi_sidecar_template.json` holds static protocol-level fields shared across all subjects (e.g. `PhaseEncodingDirection`, `TotalReadoutTime`, scanner metadata). Edit this file to update protocol-level metadata. Per-subject fields are always extracted automatically from the PAR file.
 
 ## Subject LUT
 
-`subject_lut.tsv` is updated on every run and maps original PAR filenames to BIDS subject IDs, along with patient name, scan date, and protocol extracted from the PAR header. Useful for tracking provenance.
+`subject_lut.tsv` (gitignored) is updated on every full conversion run and maps original PAR filenames to BIDS subject IDs, along with patient name, scan date, and protocol. Useful for tracking provenance.
 
 ## BIDS output structure
 
