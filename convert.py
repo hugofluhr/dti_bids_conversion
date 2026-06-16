@@ -20,7 +20,6 @@ from pathlib import Path
 
 import pandas as pd
 
-LUT_PATH = Path(__file__).parent / 'subject_lut.tsv'
 DWI_TEMPLATE_PATH = Path(__file__).parent / 'dwi_sidecar_template.json'
 
 # Fields dcm2niix writes that are not BIDS-compliant or are misleading when the
@@ -74,10 +73,10 @@ def parse_par_metadata(par_file: Path) -> dict:
     return meta
 
 
-def update_subject_lut(entries: list[dict]) -> None:
+def update_subject_lut(entries: list[dict], lut_path: Path) -> None:
     """Merge new conversion entries into subject_lut.tsv, keyed on original_filename."""
-    if LUT_PATH.exists():
-        existing = pd.read_csv(LUT_PATH, sep='\t', dtype=str)
+    if lut_path.exists():
+        existing = pd.read_csv(lut_path, sep='\t', dtype=str)
     else:
         existing = pd.DataFrame(columns=['subject_id', 'original_filename', 'scan_type',
                                          'patient_name', 'scan_date', 'protocol', 'converted_at'])
@@ -86,7 +85,7 @@ def update_subject_lut(entries: list[dict]) -> None:
     merged = pd.concat([existing, new_df], ignore_index=True)
     merged = merged.drop_duplicates(subset=['original_filename', 'scan_type'], keep='last')
     merged = merged.sort_values(['subject_id', 'scan_type']).reset_index(drop=True)
-    merged.to_csv(LUT_PATH, sep='\t', index=False)
+    merged.to_csv(lut_path, sep='\t', index=False)
 
 
 def find_par_files(source_dir: Path) -> list[Path]:
@@ -339,9 +338,10 @@ def main() -> None:
         else:
             write_dataset_description(args.output)
             write_participants(args.output, subject_ids)
-            update_subject_lut(lut_entries)
+            lut_path = args.output / 'subject_lut.tsv'
+            update_subject_lut(lut_entries, lut_path)
             print(f'\nDone. BIDS dataset at {args.output}')
-            print(f'Subject LUT updated: {LUT_PATH}')
+            print(f'Subject LUT updated: {lut_path}')
             if not args.skip_validate:
                 validate_bids(args.output)
 
