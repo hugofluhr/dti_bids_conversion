@@ -33,11 +33,14 @@ conda run -n neuroim python convert.py \
 
 The script will:
 1. Detect all PAR files in `source_dir` and classify them as T1 or DWI
-2. Run `dcm2niix` on each file to produce NIfTI + bvec/bval
-3. Write `dataset_description.json` and `participants.tsv` into the BIDS root
-4. For DWI, build the JSON sidecar: keep dcm2niix-extracted fields (e.g. `ImageOrientationPatientDICOM`), strip non-BIDS fields, then apply static fields from `dwi_sidecar_template.json` and per-subject fields (EchoTime, AcquisitionNumber, SeriesNumber, Philips rescaling factors) extracted from the PAR file
-5. Update `subject_lut.tsv` (gitignored) with subject metadata and conversion timestamp
-6. Run `bids-validator` on the output (pass `--skip-validate` to bypass)
+2. Skip any subject/scan pair whose BIDS output already exists (safe to re-run
+   `convert.py` against the full `source_dir` as new subjects arrive — pass
+   `--force` to re-convert everything anyway)
+3. Run `dcm2niix` on each remaining file to produce NIfTI + bvec/bval
+4. Write `dataset_description.json` and `participants.tsv` into the BIDS root
+5. For DWI, build the JSON sidecar: keep dcm2niix-extracted fields (e.g. `ImageOrientationPatientDICOM`), strip non-BIDS fields, then apply static fields from `dwi_sidecar_template.json` and per-subject fields (EchoTime, AcquisitionNumber, SeriesNumber, Philips rescaling factors) extracted from the PAR file
+6. Update `subject_lut.tsv` (gitignored) with subject metadata and conversion timestamp
+7. Run `bids-validator` on the output (pass `--skip-validate` to bypass)
 
 To update only the DWI JSON sidecars (e.g. after editing `dwi_sidecar_template.json`) without re-running dcm2niix:
 

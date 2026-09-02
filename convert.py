@@ -221,6 +221,20 @@ def apply_par_dwi_fields(json_path: Path, par_file: Path) -> None:
     json_path.write_text(json.dumps(sidecar, indent=2) + '\n')
 
 
+def output_nii_path(sub_id: str, scan_type: str, bids_root: Path) -> Path:
+    sub_label = f'sub-{sub_id}'
+    modality = 'anat' if scan_type == 't1' else 'dwi'
+    dest_dir = bids_root / sub_label / modality
+    if scan_type == 'dwi':
+        return dest_dir / f'{sub_label}_dwi.nii.gz'
+    return dest_dir / f'{sub_label}_T1w.nii.gz'
+
+
+def already_converted(sub_id: str, scan_type: str, bids_root: Path) -> bool:
+    """True if this subject/scan already has BIDS output (NIfTI present)."""
+    return output_nii_path(sub_id, scan_type, bids_root).exists()
+
+
 def convert_subject(sub_id: str, scan_type: str, par_file: Path, bids_root: Path,
                     update_json_only: bool = False) -> None:
     sub_label = f'sub-{sub_id}'
@@ -228,7 +242,7 @@ def convert_subject(sub_id: str, scan_type: str, par_file: Path, bids_root: Path
     dest_dir = bids_root / sub_label / modality
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    nii_path = dest_dir / f'{sub_label}_dwi.nii.gz' if scan_type == 'dwi' else dest_dir / f'{sub_label}_T1w.nii.gz'
+    nii_path = output_nii_path(sub_id, scan_type, bids_root)
 
     if update_json_only:
         if not nii_path.exists():
@@ -288,6 +302,9 @@ def main() -> None:
     parser.add_argument('--update-json-only', action='store_true',
                         help='Only update DWI JSON sidecars from template; skip re-conversion '
                              '(NIfTI must already exist)')
+    parser.add_argument('--force', action='store_true',
+                        help='Re-convert subjects even if BIDS output already exists '
+                             '(default: skip already-converted subject/scan pairs)')
     args = parser.parse_args()
 
     par_files = find_par_files(args.source)
@@ -308,6 +325,11 @@ def main() -> None:
             continue
         if scan_type is None:
             print(f'SKIP (unknown scan type): {par.name}')
+            continue
+
+        if not args.update_json_only and not args.force and already_converted(sub_id, scan_type, args.output):
+            print(f'SKIP (already converted) sub-{sub_id} [{scan_type}]: {par.name}')
+            subject_ids.append(sub_id)  # keep in participants.tsv
             continue
 
         action = 'Updating JSON' if args.update_json_only else 'Converting'
