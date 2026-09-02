@@ -23,8 +23,14 @@ CONDA_BASE="${CONDA_EXE%/bin/conda}"
 source "$CONDA_BASE/etc/profile.d/conda.sh"
 
 cd ~/repos/dti_bids_conversion
-conda env remove -n neuroim -y 2>/dev/null || true
-conda env create -f environment.yml
+
+if conda env list | grep -q '^neuroim '; then
+    echo "neuroim env exists -- updating in place from environment.yml"
+    conda env update -n neuroim -f environment.yml --prune
+else
+    echo "neuroim env missing -- creating from environment.yml"
+    conda env create -f environment.yml
+fi
 conda activate neuroim
 
 # The real bids-validator CLI is npm-distributed (conda-forge's package of
@@ -34,5 +40,5 @@ conda activate neuroim
 # `bids-validator` executable into $CONDA_PREFIX/bin.
 npm install -g bids-validator@1.15.0
 
-echo "Done. neuroim env created."
+echo "Done."
 which bids-validator
