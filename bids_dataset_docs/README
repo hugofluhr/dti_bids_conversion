@@ -1,0 +1,47 @@
+# cocaine_study (bluko_mrs) BIDS dataset
+
+Philips PAR/REC T1w and DWI data converted to BIDS with
+[dti_bids_conversion](https://github.com/hugofluhr/dti_bids_conversion)
+(`dcm2niix` + custom sidecar handling).
+
+## Known data issues
+
+### Missing DWI data: sub-084
+
+sub-084 has a T1w scan but no DWI (`dwi/`) data in this dataset. This is
+a **raw data problem at the source**, not a conversion failure:
+`raw_data/084_bluko_mrs_wipq64wb.rec` is missing entirely (only the
+`.par` header is present). The original conversion attempt reported:
+`Total number of slices (2621) not divisible by slices per 3D volume
+(60) [acquisition aborted]` -- consistent with an aborted DWI
+acquisition at the scanner.
+
+Action needed: re-acquire or re-export DWI data for this subject if it
+is available, otherwise it should be excluded from DWI analyses.
+
+(sub-073 had the same issue -- a truncated `.rec` -- but a complete
+replacement file was located and re-converted on 2026-09-02. Its DWI
+data is now complete.)
+
+### T1w protocol variant: sub-040, 044, 046, 062, 066, 077, 098
+
+These 7 subjects' T1w scans were acquired under PAR header protocol name
+`WIP sT1W_3D_TFE`, not the standard `WIP T1_NFB` used for the rest of the
+cohort (raw PAR/REC filenames are identical across both -- the difference
+only shows up in the PAR header's own `Protocol name` field and the
+resulting sidecar `ProtocolName`/rescale/orientation values). This is
+flagged by `bids-validator` as `INCONSISTENT_PARAMETERS` (code 39).
+
+Both are Philips 3D T1-weighted structural sequences with matching
+TR/TE, but they are not the same acquisition, and the difference is not
+visible from filenames alone. Confirm with the study team whether this
+was a deliberate protocol change partway through data collection before
+treating these subjects' T1w data as equivalent to the rest of the
+cohort in analysis.
+
+### `subject_lut.tsv`
+
+`subject_lut.tsv` at the dataset root is provenance metadata (original
+PAR filename, patient name, scan date, protocol, conversion timestamp)
+written by the conversion pipeline -- not a BIDS data file. It is
+excluded from validation via `.bidsignore`.

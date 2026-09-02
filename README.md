@@ -56,6 +56,10 @@ conda run -n neuroim python convert.py <source_dir> <bids_output_dir> --update-j
 
 `subject_lut.tsv` (gitignored) is updated on every full conversion run and maps original PAR filenames to BIDS subject IDs, along with patient name, scan date, and protocol. Useful for tracking provenance.
 
+## BIDS dataset docs
+
+`bids_dataset_docs/` holds version-controlled copies of the `README` and `.bidsignore` that live at the root of the actual BIDS output directory (which itself is not tracked in this repo -- see `<bids_output_dir>`). Update both places when documenting a new data issue: this repo for history/review, and the live dataset root so `bids-validator` and anyone browsing the data sees it.
+
 ## BIDS output structure
 
 ```
