@@ -6,5 +6,8 @@ dependencies:
   - nibabel>=5.3
   - pandas>=2.2
   - pybids>=0.19
-  - bids-validator>=1.14
+  - bids-validator>=1.14  # note: conda-forge's "bids-validator" is the Python
+                          # rules library (used internally by pybids), NOT the
+                          # CLI tool -- that comes from npm, installed below
   - dcm2niix
+  - nodejs>=18
