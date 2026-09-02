@@ -14,7 +14,7 @@ CONDA_BASE="${CONDA_EXE%/bin/conda}"
 source "$CONDA_BASE/etc/profile.d/conda.sh"
 conda activate neuroim
 
-SOURCE_DIR=~/scratch_new_subjects
+SOURCE_DIR=/shares/hare.econ.uzh/data-cocaine-habits/raw_data
 OUTPUT_DIR=/shares/hare.econ.uzh/data-cocaine-habits/bids_dataset
 
 cd ~/repos/dti_bids_conversion
